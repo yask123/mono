@@ -1,0 +1,6 @@
+build/
+previews/
+.DS_Store
+.vercel/
+xcuserdata/
+*.xcuserstate

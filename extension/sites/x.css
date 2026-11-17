@@ -1,0 +1,508 @@
+/* Mono — X recipe (x.com).
+   Everything is scoped to html[data-mono], so "off" is the untouched site.
+   Hooks are data-testid / role / aria attributes, which X keeps stable; the
+   one r-* class hook is marked. Every declaration on X's own elements is
+   !important so the recipe wins whichever origin the browser injects it at. */
+
+/* ── 1. Canvas, type and tone ────────────────────────────────────────── */
+
+html[data-mono],
+html[data-mono] body {
+  background-color: var(--m-bg) !important;
+  color: var(--m-fg) !important;
+  scrollbar-color: var(--m-line) var(--m-bg) !important;
+}
+
+html[data-mono] body {
+  padding-bottom: 26px !important;
+}
+
+html[data-mono] body :where(*) {
+  font-family: var(--m-font) !important;
+  font-variant-ligatures: none !important;
+}
+
+html[data-mono] ::selection {
+  background: var(--m-accent) !important;
+  color: var(--m-bg) !important;
+}
+
+/* Everything inherits its colour; labels drawn over media keep their own. */
+html[data-mono] :where(main, header[role="banner"], #layers) :where(*):not([data-testid="tweetPhoto"] *, [data-testid="videoPlayer"] *, [data-testid^="card.layout"] *) {
+  color: inherit !important;
+  border-color: var(--m-line) !important;
+  border-radius: var(--m-radius) !important;
+}
+
+/* X writes its three text tones inline; map each onto the look.
+   Values cover the Lights out, Dim and Default themes. */
+html[data-mono] body :is(
+  [style^="color: rgb(231, 233, 234)"], [style*="; color: rgb(231, 233, 234)"],
+  [style^="color: rgb(247, 249, 249)"], [style*="; color: rgb(247, 249, 249)"],
+  [style^="color: rgb(15, 20, 25)"], [style*="; color: rgb(15, 20, 25)"]) {
+  color: var(--m-fg) !important;
+}
+
+html[data-mono] body :is(
+  [style^="color: rgb(113, 118, 123)"], [style*="; color: rgb(113, 118, 123)"],
+  [style^="color: rgb(139, 152, 165)"], [style*="; color: rgb(139, 152, 165)"],
+  [style^="color: rgb(83, 100, 113)"], [style*="; color: rgb(83, 100, 113)"]) {
+  color: var(--m-dim) !important;
+}
+
+html[data-mono] body :is([style^="color: rgb(29, 155, 240)"], [style*="; color: rgb(29, 155, 240)"]) {
+  color: var(--m-accent) !important;
+}
+
+/* Borders X keeps invisible stay invisible. */
+html[data-mono] body [style*="border-color: rgba(0, 0, 0, 0)"] {
+  border-color: transparent !important;
+}
+
+/* Flatten every surface in the page columns. */
+html[data-mono] :where(main, header[role="banner"]) :where(*):not([data-testid="tweetPhoto"] *, [data-testid="videoPlayer"] *, [data-testid^="card.layout"] *, img, video) {
+  background-color: transparent !important;
+}
+
+/* Filled buttons become outlined ones. */
+html[data-mono] body :is(
+  [style*="background-color: rgb(239, 243, 244)"],
+  [style*="background-color: rgb(29, 155, 240)"],
+  [style*="background-color: rgb(15, 20, 25)"]):is(a, button, [role="button"]) {
+  background-color: transparent !important;
+  border: 1px solid var(--m-accent) !important;
+}
+
+html[data-mono] body :is(
+  [style*="background-color: rgb(239, 243, 244)"],
+  [style*="background-color: rgb(29, 155, 240)"],
+  [style*="background-color: rgb(15, 20, 25)"]):is(a, button, [role="button"]) * {
+  color: var(--m-accent) !important;
+}
+
+/* The bar that sticks to the top of the main column needs a real surface. */
+html[data-mono] body [data-testid="primaryColumn"] > div > div:first-child {
+  background-color: var(--m-bg) !important;
+}
+
+html[data-mono] body [data-testid="primaryColumn"] > div > div:first-child * {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+html[data-mono] [data-testid="primaryColumn"] > div > div:first-child h2,
+html[data-mono] [data-testid="primaryColumn"] > div > div:first-child h2 * {
+  font-family: var(--m-font-meta) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  text-transform: lowercase !important;
+}
+
+/* ── 2. Layout: one column and a quiet nav ───────────────────────────── */
+
+html[data-mono] [data-testid="sidebarColumn"] {
+  display: none !important;
+}
+
+html[data-mono] main[role="main"] > div {
+  width: auto !important;
+}
+
+html[data-mono] [data-testid="primaryColumn"] {
+  width: min(680px, calc(100vw - 110px)) !important;
+  max-width: none !important;
+  border-left-width: 0 !important;
+  border-right-width: 0 !important;
+}
+
+/* Nav: drop the logo and everything that sells or nudges. */
+html[data-mono] header[role="banner"] h1,
+html[data-mono] header[role="banner"] :is(
+  [data-testid="AppTabBar_Calls_Link"],
+  [data-testid="premium-hub-tab"],
+  a[aria-label="Grok"],
+  a[aria-label="History"],
+  a[aria-label="Creator Studio"],
+  a[aria-label="Articles"]) {
+  display: none !important;
+}
+
+html[data-mono] header[role="banner"] nav :is(a, button) > div {
+  padding: 5px 10px !important;
+}
+
+html[data-mono] header[role="banner"] nav :is(a, button) [dir="ltr"] {
+  font-family: var(--m-font-meta) !important;
+  font-size: 13.5px !important;
+  line-height: 20px !important;
+  text-transform: lowercase !important;
+  margin: 0 12px 0 0 !important;
+}
+
+/* Words only, when the word is there to show. */
+html[data-mono]:not([data-mono="neon"]) header[role="banner"] nav :is(a, button) > div > div:first-child:not(:only-child) {
+  display: none !important;
+}
+
+html[data-mono="neon"] header[role="banner"] nav :is(a, button) > div > div:first-child svg {
+  width: 18px !important;
+  height: 18px !important;
+}
+
+html[data-mono="neon"] header[role="banner"] nav :is(a, button) [dir="ltr"] {
+  margin-left: 12px !important;
+}
+
+/* Where you are. */
+html[data-mono][data-mono-page="home"] [data-testid="AppTabBar_Home_Link"] *,
+html[data-mono][data-mono-page="explore"] [data-testid="AppTabBar_Explore_Link"] *,
+html[data-mono][data-mono-page="notifications"] [data-testid="AppTabBar_Notifications_Link"] *,
+html[data-mono][data-mono-page="messages"] [data-testid="AppTabBar_DirectMessage_Link"] * {
+  color: var(--m-accent) !important;
+}
+
+/* Unread notifications and messages: one dot, no number. */
+html[data-mono] header[role="banner"] nav :is(
+  [data-testid="AppTabBar_Notifications_Link"],
+  [data-testid="AppTabBar_DirectMessage_Link"])[aria-label*="unread"] [dir="ltr"]::after {
+  content: " \25CF";
+  color: var(--m-accent);
+  font-size: 9px;
+  vertical-align: 2px;
+}
+
+html[data-mono] [data-testid="SideNav_NewTweet_Button"] {
+  min-height: 30px !important;
+  height: 30px !important;
+  width: auto !important;
+  min-width: 0 !important;
+  align-self: flex-start !important;
+  margin: 10px 0 0 10px !important;
+  padding: 0 14px !important;
+}
+
+html[data-mono] [data-testid="SideNav_NewTweet_Button"] * {
+  font-family: var(--m-font-meta) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  text-transform: lowercase !important;
+}
+
+html[data-mono] [data-testid="SideNav_AccountSwitcher_Button"] * {
+  font-size: 12.5px !important;
+}
+
+/* Floating drawers. */
+html[data-mono] :is([data-testid="GrokDrawer"], [data-testid="chat-drawer-root"]) {
+  display: none !important;
+}
+
+/* ── 3. The top bar: tabs as plain words ─────────────────────────────── */
+
+html[data-mono] [role="tablist"] [role="tab"] * {
+  font-family: var(--m-font-meta) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  text-transform: lowercase !important;
+  color: var(--m-dim) !important;
+}
+
+html[data-mono] [role="tablist"] [role="tab"][aria-selected="true"] * {
+  color: var(--m-accent) !important;
+}
+
+html[data-mono] [role="tablist"] [role="tab"] [style*="background-color"] {
+  display: none !important;
+}
+
+html[data-mono] [role="tablist"] [role="tab"] {
+  border-radius: 0 !important;
+}
+
+html[data-mono] [role="tablist"] [role="tab"][aria-selected="true"] {
+  box-shadow: inset 0 -1px 0 var(--m-accent) !important;
+}
+
+/* Nudges to load more: the "new posts" pill and the "Show N posts" row. */
+html[data-mono] [data-testid="primaryColumn"] > div > div:first-child [role="status"],
+html[data-mono][data-mono-page="home"] [data-testid="cellInnerDiv"]:has(> div > div > button):not(:has(article)) {
+  display: none !important;
+}
+
+/* The composer above the home timeline; Post stays in the nav. */
+html[data-mono][data-mono-page="home"] [data-testid="primaryColumn"] > div > div:has([data-testid="tweetTextarea_0"]):not(:has(article)) {
+  display: none !important;
+}
+
+html[data-mono] :is([data-testid^="tweetTextarea_"], .public-DraftEditorPlaceholder-root),
+html[data-mono] :is([data-testid^="tweetTextarea_"], .public-DraftEditorPlaceholder-root) * {
+  font-size: var(--m-size) !important;
+  line-height: var(--m-leading) !important;
+}
+
+/* ── 4. Posts ────────────────────────────────────────────────────────── */
+
+html[data-mono] [data-testid="tweetText"] {
+  font-size: var(--m-size) !important;
+  line-height: var(--m-leading) !important;
+}
+
+html[data-mono] [data-testid="User-Name"] * {
+  font-family: var(--m-font-meta) !important;
+  font-size: 12.5px !important;
+}
+
+/* Verified and affiliation badges. */
+html[data-mono] [data-testid="User-Name"] :is(img, [data-testid="icon-verified"]) {
+  filter: grayscale(1) !important;
+  opacity: 0.7 !important;
+}
+
+/* The post you point at gets a cursor line; its actions appear with it. */
+html[data-mono] article[data-testid="tweet"] {
+  border-radius: 0 !important;
+  transition: box-shadow 0.12s ease !important;
+}
+
+html[data-mono] article[data-testid="tweet"]:hover {
+  box-shadow: inset 2px 0 0 var(--m-accent) !important;
+}
+
+html[data-mono] article[data-testid="tweet"] [role="group"] {
+  margin-top: 4px !important;
+}
+
+html[data-mono] article[data-testid="tweet"] [role="group"],
+html[data-mono] article[data-testid="tweet"] [data-testid="caret"] {
+  opacity: 0 !important;
+  transition: opacity 0.12s ease !important;
+}
+
+html[data-mono] article[data-testid="tweet"]:is(:hover, :focus-within) [role="group"],
+html[data-mono] article[data-testid="tweet"]:is(:hover, :focus-within) [data-testid="caret"] {
+  opacity: 1 !important;
+}
+
+html[data-mono] article[data-testid="tweet"] [role="group"] * {
+  font-family: var(--m-font-meta) !important;
+  font-size: 12px !important;
+  color: var(--m-dim) !important;
+}
+
+html[data-mono] article[data-testid="tweet"] button[aria-label="Grok actions"] {
+  display: none !important;
+}
+
+/* Promoted posts. */
+html[data-mono] [data-testid="cellInnerDiv"]:has([data-testid$="impression-pixel"]) {
+  display: none !important;
+}
+
+/* "Discover more" under a post's replies. Kept in the layout (hidden, not
+   removed) so the timeline does not keep fetching to fill the gap. */
+html[data-mono][data-mono-page="status"] [data-testid="cellInnerDiv"]:has(h2[role="heading"]),
+html[data-mono][data-mono-page="status"] [data-testid="cellInnerDiv"]:has(h2[role="heading"]) ~ [data-testid="cellInnerDiv"] {
+  visibility: hidden !important;
+}
+
+/* ── 5. Pictures ─────────────────────────────────────────────────────── */
+
+html[data-mono] :is(
+  [data-testid="tweetPhoto"],
+  [data-testid^="card.layout"][data-testid$=".media"],
+  [data-testid="article-cover-image"],
+  [data-testid="videoPlayer"]:not([data-testid="tweetPhoto"] *)) {
+  filter: var(--m-media) !important;
+  opacity: 0.82 !important;
+  transition: filter 0.18s ease, opacity 0.18s ease !important;
+}
+
+html[data-mono] :is(
+  [data-testid="tweetPhoto"],
+  [data-testid^="card.layout"][data-testid$=".media"],
+  [data-testid="article-cover-image"],
+  [data-testid="videoPlayer"]:not([data-testid="tweetPhoto"] *)):hover {
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+html[data-mono] [data-testid^="UserAvatar-Container"] {
+  filter: grayscale(1) contrast(1.05) !important;
+  opacity: 0.85 !important;
+}
+
+html[data-mono] [data-testid^="UserAvatar-Container"] :is(div, a) {
+  clip-path: none !important;
+}
+
+html[data-mono] img[src*="/emoji/"] {
+  filter: var(--m-emoji) !important;
+}
+
+/* Phosphor is text only: no faces, and media folds to one line you can open. */
+html[data-mono="phosphor"] article[data-testid="tweet"] div:has(> [data-testid="Tweet-User-Avatar"]) {
+  display: none !important;
+}
+
+html[data-mono="phosphor"] [data-mono-media]:not([data-mono-open]) {
+  height: auto !important;
+  min-height: 0 !important;
+  aspect-ratio: auto !important;
+  padding: 0 !important;
+  border-width: 0 !important;
+}
+
+html[data-mono="phosphor"] [data-mono-media]:not([data-mono-open]) > * {
+  display: none !important;
+}
+
+html[data-mono="phosphor"] [data-mono-media]::before {
+  content: "\25B8  " attr(data-mono-media);
+  display: block;
+  padding: 1px 0;
+  font-size: 12.5px;
+  line-height: 20px;
+  color: var(--m-dim);
+  cursor: pointer;
+}
+
+html[data-mono="phosphor"] [data-mono-media][data-mono-open]::before {
+  content: "\25BE  " attr(data-mono-media);
+  margin-bottom: 6px;
+}
+
+html[data-mono="phosphor"] div[role="link"] [data-mono-media]::before {
+  padding: 0 12px 8px;
+}
+
+/* An article's cover already sits inside the card's padding. */
+html[data-mono="phosphor"] div[role="link"] [data-testid="article-cover-image"][data-mono-media]::before {
+  padding: 0 0 6px;
+}
+
+html[data-mono="phosphor"] [data-mono-media]:hover::before {
+  color: var(--m-accent);
+}
+
+/* ── 6. Menus, dialogs, hover cards ──────────────────────────────────── */
+
+/* r-kemksi is X's "page background" class. */
+html[data-mono] #layers .r-kemksi {
+  background-color: var(--m-bg) !important;
+}
+
+html[data-mono] #layers :is([role="menu"], [data-testid="HoverCard"], [data-testid="Dropdown"]) {
+  background-color: var(--m-bg) !important;
+  border: 1px solid var(--m-line) !important;
+  box-shadow: none !important;
+}
+
+html[data-mono] #layers [aria-modal="true"] {
+  background-color: var(--m-bg) !important;
+  border: 1px solid var(--m-line) !important;
+}
+
+html[data-mono] #layers [aria-modal="true"] :where(*):not([data-testid="tweetPhoto"] *, [data-testid="videoPlayer"] *, [data-testid^="card.layout"] *, img, video) {
+  background-color: transparent !important;
+}
+
+/* ── 7. Writing: the compose dialog becomes a page ───────────────────── */
+
+/* The feed behind it goes away. */
+html[data-mono][data-mono-compose] #layers [data-testid="mask"] {
+  background-color: var(--m-bg) !important;
+}
+
+/* The sheet: no box, a comfortable measure, set down from the top. */
+html[data-mono][data-mono-compose] #layers [role="dialog"][aria-modal="true"] {
+  top: 13vh !important;
+  width: min(760px, 92vw) !important;
+  max-width: none !important;
+}
+
+/* X caps the sheet's contents at 600px; let them fill the page. */
+html[data-mono][data-mono-compose] #layers [aria-modal="true"] > div > div,
+html[data-mono][data-mono-compose] #layers [aria-modal="true"] div:has([data-testid="app-bar-close"]) {
+  max-width: none !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+html[data-mono][data-mono-compose] #layers [role="dialog"][aria-modal="true"],
+html[data-mono][data-mono-compose] #layers [role="dialog"][aria-modal="true"] :where(*) {
+  border-color: transparent !important;
+}
+
+/* The text: one monospaced column with room to breathe, in every look. */
+html[data-mono][data-mono-compose] #layers [aria-modal="true"] :is([data-testid^="tweetTextarea_"], .public-DraftEditorPlaceholder-root),
+html[data-mono][data-mono-compose] #layers [aria-modal="true"] :is([data-testid^="tweetTextarea_"], .public-DraftEditorPlaceholder-root) * {
+  font-family: var(--m-font-meta) !important;
+  font-size: 17px !important;
+  line-height: 1.75 !important;
+  caret-color: var(--m-accent) !important;
+  caret-shape: block !important; /* a block cursor where the browser can draw one */
+}
+
+html[data-mono][data-mono-compose] #layers [aria-modal="true"] .public-DraftEditorPlaceholder-root,
+html[data-mono][data-mono-compose] #layers [aria-modal="true"] .public-DraftEditorPlaceholder-root * {
+  color: var(--m-dim) !important;
+}
+
+html[data-mono][data-mono-compose] #layers [aria-modal="true"] [data-testid$="RichTextInputContainer"] {
+  min-height: 34vh !important;
+}
+
+/* No face beside the page, and no gap where it stood. */
+html[data-mono][data-mono-compose] #layers [aria-modal="true"] div:has(> [data-testid^="UserAvatar-Container"]):not(article *),
+html[data-mono][data-mono-compose] #layers [aria-modal="true"] div:has(> div > div > div > button[aria-label$="can reply"]) > div:first-child:empty {
+  display: none !important;
+}
+
+html[data-mono][data-mono-compose] #layers [aria-modal="true"] [aria-label="Choose audience"] {
+  margin-left: -12px !important;
+}
+
+/* Everything that is not the text waits, faint, until you reach for it. */
+html[data-mono][data-mono-compose] #layers [aria-modal="true"] :is(
+  [data-testid="app-bar-close"],
+  [data-testid="unsentButton"],
+  [aria-label="Choose audience"],
+  button[aria-label$="can reply"],
+  [data-testid="toolBar"] [role="tablist"],
+  [data-testid="toolBar"] [role="progressbar"]) {
+  opacity: 0.3 !important;
+  transition: opacity 0.15s ease !important;
+}
+
+html[data-mono][data-mono-compose] #layers [aria-modal="true"] :is(
+  [data-testid="app-bar-close"],
+  [data-testid="unsentButton"],
+  [aria-label="Choose audience"],
+  button[aria-label$="can reply"],
+  [data-testid="toolBar"] [role="tablist"],
+  [data-testid="toolBar"] [role="progressbar"]):is(:hover, :focus-within) {
+  opacity: 1 !important;
+}
+
+html[data-mono][data-mono-compose] #layers [aria-modal="true"] :is(
+  [data-testid="unsentButton"],
+  [data-testid="tweetButton"],
+  [aria-label="Choose audience"],
+  button[aria-label$="can reply"]) * {
+  font-family: var(--m-font-meta) !important;
+  font-size: 12.5px !important;
+  font-weight: 500 !important;
+  text-transform: lowercase !important;
+}
+
+/* One hairline above the tools, and the only solid thing on the page: post. */
+html[data-mono][data-mono-compose] #layers [aria-modal="true"] [data-testid="toolBar"] {
+  border-top: 1px solid var(--m-line) !important;
+  padding-top: 10px !important;
+}
+
+html[data-mono][data-mono-compose] #layers [aria-modal="true"] [data-testid="tweetButton"] {
+  border: 1px solid var(--m-accent) !important;
+  min-height: 30px !important;
+  padding: 0 16px !important;
+}

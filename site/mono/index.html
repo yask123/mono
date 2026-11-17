@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en" data-mono="phosphor">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mono: a quiet way to read X</title>
+<meta name="description" content="Mono is a small open-source browser extension for Safari and Chrome. It reduces X to text, one colour and a hairline around the page.">
+<meta name="theme-color" content="#050706">
+<link rel="canonical" href="https://yask.dev/mono">
+<link rel="icon" type="image/png" href="/mono/assets/icon-128.png">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://yask.dev/mono">
+<meta property="og:title" content="Mono: a quiet way to read X">
+<meta property="og:description" content="A small open-source browser extension. X as text, one colour and a hairline around the page.">
+<meta property="og:image" content="https://yask.dev/mono/assets/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<script>
+  // Pick the look before first paint: the visitor's last choice, else paper for light mode.
+  (function () {
+    var look = null;
+    try { look = localStorage.getItem('mono-site-look'); } catch (e) {}
+    if (['phosphor', 'neon', 'paper'].indexOf(look) < 0) {
+      look = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'paper' : 'phosphor';
+    }
+    document.documentElement.setAttribute('data-mono', look);
+  })();
+</script>
+<style>
+  /* The three looks, as in the extension's looks.css. The page wears whichever one is chosen. */
+  html[data-mono="phosphor"] {
+    --m-bg: #050706; --m-fg: #c4d2c8; --m-dim: #5a7062; --m-line: #142019;
+    --m-accent: #56ff9f; --m-glow: rgba(86, 255, 159, 0.30);
+    --m-font: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "DejaVu Sans Mono", monospace;
+    --m-font-meta: var(--m-font);
+    --m-size: 14.5px; --m-radius: 0px;
+    color-scheme: dark;
+  }
+  html[data-mono="neon"] {
+    --m-bg: #06060a; --m-fg: #e6e6f0; --m-dim: #6d6d88; --m-line: #1a1a29;
+    --m-accent: #ff5ad6; --m-accent-2: #46e8ff; --m-glow: rgba(255, 90, 214, 0.26);
+    --m-font: ui-sans-serif, -apple-system, system-ui, "Helvetica Neue", "Segoe UI", sans-serif;
+    --m-font-meta: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "DejaVu Sans Mono", monospace;
+    --m-size: 16px; --m-radius: 6px;
+    color-scheme: dark;
+  }
+  html[data-mono="paper"] {
+    --m-bg: #f3f0e7; --m-fg: #1b1b19; --m-dim: #8a867b; --m-line: #d9d4c6;
+    --m-accent: #ee4219; --m-glow: rgba(238, 66, 25, 0);
+    --m-font: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "DejaVu Sans Mono", monospace;
+    --m-font-meta: var(--m-font);
+    --m-size: 14.5px; --m-radius: 0px;
+    color-scheme: light;
+  }
+
+  * { box-sizing: border-box; }
+
+  html {
+    background: var(--m-bg);
+    scrollbar-color: var(--m-line) var(--m-bg);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: var(--m-bg);
+    color: var(--m-fg);
+    font: var(--m-size)/1.7 var(--m-font);
+    font-variant-ligatures: none;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection { background: var(--m-accent); color: var(--m-bg); }
+
+  a { color: var(--m-accent); text-decoration: none; }
+  a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+  :focus-visible { outline: 1px solid var(--m-accent); outline-offset: 3px; }
+
+  /* The frame: one hairline around the page. */
+  .frame {
+    position: fixed; inset: 0; z-index: 20; pointer-events: none;
+    border: 1px solid var(--m-accent);
+    box-shadow: inset 0 0 26px -8px var(--m-glow);
+  }
+  html[data-mono="neon"] .frame {
+    border-image: linear-gradient(135deg, var(--m-accent-2), #8a6bff 50%, var(--m-accent)) 1;
+    box-shadow: inset 16px 16px 34px -22px rgba(70, 232, 255, 0.55), inset -16px -16px 34px -22px rgba(255, 90, 214, 0.55);
+  }
+  html[data-mono="paper"] .frame { border-color: var(--m-fg); box-shadow: none; }
+
+  /* The status line. */
+  .bar {
+    position: fixed; left: 1px; right: 1px; bottom: 1px; z-index: 21;
+    display: flex; align-items: center; gap: 12px;
+    height: 28px; padding-right: 12px;
+    font: 500 11.5px/28px var(--m-font-meta); letter-spacing: 0.03em;
+    background: var(--m-bg); color: var(--m-dim);
+    border-top: 1px solid var(--m-line);
+    -webkit-user-select: none; user-select: none;
+  }
+  .bar .tag {
+    padding: 0 10px; font-weight: 700; letter-spacing: 0.14em;
+    background: var(--m-accent); color: var(--m-bg);
+  }
+  .bar .tag:hover { text-decoration: none; }
+  .bar .path { color: var(--m-fg); white-space: nowrap; }
+  .bar .space { flex: 1; }
+  .bar button, .looks button {
+    all: unset; cursor: pointer;
+  }
+  .bar button { padding: 0 3px; color: var(--m-fg); opacity: 0.62; }
+  .bar button:hover { opacity: 1; text-decoration: underline; text-underline-offset: 3px; }
+  .bar button[aria-pressed="true"] { color: var(--m-accent); opacity: 1; }
+  .bar button[aria-pressed="true"]::before { content: "["; }
+  .bar button[aria-pressed="true"]::after { content: "]"; }
+  .bar button:focus-visible, .looks button:focus-visible { outline: 1px solid var(--m-accent); outline-offset: 2px; }
+  .bar .key { opacity: 0.55; white-space: nowrap; }
+
+  /* The page. */
+  main {
+    max-width: 728px;
+    margin: 0 auto;
+    padding: 56px 24px 150px;
+  }
+
+  .top {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font: 500 12.5px/1.6 var(--m-font-meta); letter-spacing: 0.04em;
+    color: var(--m-dim);
+    margin-bottom: 15vh;
+  }
+  .top nav { display: flex; gap: 22px; }
+
+  h1 {
+    margin: 0 0 30px;
+    font: 500 clamp(34px, 6.2vw, 58px)/1.08 var(--m-font);
+    letter-spacing: -0.035em;
+  }
+
+  .lede {
+    max-width: 34em;
+    margin: 0 0 64px;
+    font-size: calc(var(--m-size) + 2px);
+    line-height: 1.65;
+  }
+
+  figure { margin: 0; }
+  figure img {
+    display: block; width: 100%; height: auto;
+    border-radius: var(--m-radius);
+    background: var(--m-bg);
+  }
+  /* The first picture is a whole window, so it gets more room than the text. */
+  figure.wide {
+    width: min(1120px, calc(100vw - 48px));
+    margin-left: 50%;
+    transform: translateX(-50%);
+  }
+  figure.sheet img { border: 1px solid var(--m-line); }
+  figcaption {
+    margin-top: 14px;
+    font: 12.5px/1.6 var(--m-font-meta);
+    color: var(--m-dim);
+  }
+  figure.wide figcaption { max-width: 680px; margin-left: auto; margin-right: auto; }
+  figcaption b { font-weight: 500; color: var(--m-fg); }
+
+  h2 {
+    margin: 88px 0 20px;
+    font: 500 12.5px/1.6 var(--m-font-meta);
+    letter-spacing: 0.04em;
+    color: var(--m-dim);
+  }
+
+  p { margin: 0 0 18px; max-width: 36em; }
+
+  dl { margin: 0; }
+  dl > div {
+    display: grid; grid-template-columns: 11.5em 1fr; gap: 0 20px;
+    padding: 9px 0;
+    border-top: 1px solid var(--m-line);
+  }
+  dl > div:last-child { border-bottom: 1px solid var(--m-line); }
+  dt { font-family: var(--m-font-meta); color: var(--m-dim); }
+  dd { margin: 0; }
+
+  /* Three looks: each row switches the page. */
+  .looks { display: grid; }
+  .looks button {
+    display: grid; grid-template-columns: 11.5em 1fr; gap: 0 20px;
+    padding: 9px 0;
+    border-top: 1px solid var(--m-line);
+  }
+  .looks button:last-child { border-bottom: 1px solid var(--m-line); }
+  .looks .name { font-family: var(--m-font-meta); color: var(--m-dim); }
+  .looks .name::before { content: "  "; white-space: pre; }
+  .looks button[aria-pressed="true"] .name { color: var(--m-accent); }
+  .looks button[aria-pressed="true"] .name::before { content: "> "; }
+  .looks button:hover .name { color: var(--m-accent); }
+  .note { margin-top: 14px; font: 12.5px/1.6 var(--m-font-meta); color: var(--m-dim); }
+
+  kbd {
+    font: inherit; font-family: var(--m-font-meta);
+    color: var(--m-fg);
+  }
+
+  pre {
+    margin: 0 0 18px;
+    padding: 12px 14px;
+    border: 1px solid var(--m-line);
+    border-radius: var(--m-radius);
+    font: 13px/1.6 var(--m-font-meta);
+    overflow-x: auto;
+  }
+  pre::before { content: "$ "; color: var(--m-dim); }
+  code { font-family: var(--m-font-meta); font-size: 0.93em; }
+
+  h3 {
+    margin: 30px 0 10px;
+    font: 500 var(--m-size)/1.6 var(--m-font);
+  }
+
+  footer {
+    margin-top: 96px;
+    padding-top: 18px;
+    border-top: 1px solid var(--m-line);
+    font: 12.5px/1.8 var(--m-font-meta);
+    color: var(--m-dim);
+  }
+  footer p { margin: 0; max-width: none; }
+
+  @media (max-width: 640px) {
+    main { padding: 34px 20px 130px; }
+    .top { margin-bottom: 11vh; }
+    figure.wide { width: calc(100vw - 2px); }
+    /* On a phone, crop the window to its nav and column so the words stay readable. */
+    figure.wide img { aspect-ratio: 4 / 5; object-fit: cover; object-position: 52% 0; }
+    figure.wide figcaption { padding: 0 20px; }
+    dl > div, .looks button { grid-template-columns: 1fr; }
+    dt, .looks .name { margin-bottom: 2px; }
+    .bar .path, .bar .key { display: none; }
+    h2 { margin-top: 68px; }
+  }
+</style>
+</head>
+<body>
+<div class="frame" aria-hidden="true"></div>
+
+<main>
+  <div class="top">
+    <span>mono 0.2</span>
+    <nav>
+      <a href="#install">install</a>
+      <a href="https://github.com/yask123/mono">github</a>
+    </nav>
+  </div>
+
+  <h1>A quiet way<br>to read X.</h1>
+  <p class="lede">Mono is a small browser extension for Safari and Chrome. It reduces X to text, one colour and a hairline around the page, so what is left to look at is what people wrote.</p>
+
+  <figure class="wide">
+    <img id="shot-timeline" src="/mono/assets/timeline-phosphor.webp" width="2200" height="1480"
+         alt="An X timeline in Mono: a plain list of posts in one typeface on a single-colour page, with a six-word navigation at the left and a thin status line at the bottom.">
+    <figcaption>fig. 1 &nbsp; x.com/NASA in the <b class="look-name">phosphor</b> look. <span id="cap-timeline">One picture is folded to a line and one has been opened.</span></figcaption>
+  </figure>
+
+  <h2>what it takes away</h2>
+  <dl>
+    <div><dt>the right column</dt><dd>Trends, news, live and who to follow.</dd></div>
+    <div><dt>promoted posts</dt><dd>Hidden from the timeline.</dd></div>
+    <div><dt>counts</dt><dd>Replies, reposts, likes and views stay hidden until you point at a post.</dd></div>
+    <div><dt>pictures</dt><dd>Folded to one line you can open, or kept grey until you point at them.</dd></div>
+    <div><dt>nudges</dt><dd>The new-posts pill, the row asking you to load more, and the composer above the feed.</dd></div>
+    <div><dt>the nav</dt><dd>Six words: home, explore, notifications, chat, profile, more.</dd></div>
+  </dl>
+
+  <h2>three looks</h2>
+  <div class="looks">
+    <button type="button" data-look="phosphor"><span class="name">phosphor</span><span>Monospace throughout and one green. Text only: no avatars, and pictures fold to a line.</span></button>
+    <button type="button" data-look="neon"><span class="name">neon</span><span>System type with monospace details, and an edge that runs from cyan to magenta.</span></button>
+    <button type="button" data-look="paper"><span class="name">paper</span><span>Ink on warm paper with one vermilion accent, for daylight.</span></button>
+  </div>
+  <p class="note">Choosing one changes this page and its pictures too.</p>
+
+  <h2>writing</h2>
+  <p>Opening the composer clears the screen. What remains is one column of monospace and a block cursor, with the tools kept faint until you reach for them.</p>
+  <figure class="sheet">
+    <img id="shot-compose" src="/mono/assets/compose-phosphor.webp" width="1338" height="896" loading="lazy"
+         alt="The X composer in Mono: two lines of typed text with a block cursor on an otherwise empty page, and a faint row of tools beneath.">
+    <figcaption>fig. 2 &nbsp; The composer, <b class="look-name">phosphor</b>.</figcaption>
+  </figure>
+
+  <h2>keys</h2>
+  <dl>
+    <div><dt><kbd>&#8997;&#8679;M</kbd></dt><dd>Mono on or off. Off is the site as X made it.</dd></div>
+    <div><dt><kbd>&#8997;&#8679;L</kbd></dt><dd>The next look.</dd></div>
+    <div><dt><kbd>&#9656; image</kbd></dt><dd>Click the line to open a picture, and again to fold it.</dd></div>
+  </dl>
+
+  <h2 id="install">install</h2>
+  <h3>Chrome, Arc, Brave, Edge</h3>
+  <pre>git clone https://github.com/yask123/mono</pre>
+  <p>Open <code>chrome://extensions</code>, turn on Developer mode, choose Load unpacked and pick the <code>mono/extension</code> folder.</p>
+  <h3>Safari</h3>
+  <p>Safari needs the extension wrapped in a small Mac app, which for now you build yourself with Xcode. The <a href="https://github.com/yask123/mono#safari">README</a> has the steps.</p>
+
+  <footer>
+    <p>Open source under the MIT licence: <a href="https://github.com/yask123/mono">github.com/yask123/mono</a></p>
+    <p>Made by <a href="https://yask.dev">Yask Srivastava</a>. Mono is not affiliated with X Corp.</p>
+    <p>The pictures show NASA's public timeline.</p>
+  </footer>
+</main>
+
+<div class="bar">
+  <a class="tag" href="#top" aria-label="Mono, back to top">MONO</a>
+  <span class="path">yask.dev/mono</span>
+  <span class="space"></span>
+  <span>look</span>
+  <button type="button" data-look="phosphor">phosphor</button>
+  <button type="button" data-look="neon">neon</button>
+  <button type="button" data-look="paper">paper</button>
+  <span class="key">&#8997;&#8679;L next</span>
+</div>
+
+<script>
+  (function () {
+    var LOOKS = ['phosphor', 'neon', 'paper'];
+    var BG = { phosphor: '#050706', neon: '#06060a', paper: '#f3f0e7' };
+    var CAPTION = {
+      phosphor: 'One picture is folded to a line and one has been opened.',
+      neon: 'Pictures stay grey until you point at them, as with the first one here.',
+      paper: 'Pictures stay grey until you point at them.'
+    };
+    var root = document.documentElement;
+    var buttons = document.querySelectorAll('button[data-look]');
+    var names = document.querySelectorAll('.look-name');
+    var timeline = document.getElementById('shot-timeline');
+    var compose = document.getElementById('shot-compose');
+    var caption = document.getElementById('cap-timeline');
+    var theme = document.querySelector('meta[name="theme-color"]');
+
+    function show(look, save) {
+      root.setAttribute('data-mono', look);
+      timeline.src = '/mono/assets/timeline-' + look + '.webp';
+      compose.src = '/mono/assets/compose-' + look + '.webp';
+      caption.textContent = CAPTION[look];
+      theme.setAttribute('content', BG[look]);
+      for (var i = 0; i < names.length; i++) names[i].textContent = look;
+      for (var j = 0; j < buttons.length; j++) {
+        buttons[j].setAttribute('aria-pressed', String(buttons[j].getAttribute('data-look') === look));
+      }
+      if (save) { try { localStorage.setItem('mono-site-look', look); } catch (e) {} }
+    }
+
+    for (var k = 0; k < buttons.length; k++) {
+      buttons[k].addEventListener('click', function () { show(this.getAttribute('data-look'), true); });
+    }
+
+    // The same key as the extension.
+    document.addEventListener('keydown', function (e) {
+      if (!e.altKey || !e.shiftKey || e.metaKey || e.ctrlKey || e.code !== 'KeyL') return;
+      e.preventDefault();
+      show(LOOKS[(LOOKS.indexOf(root.getAttribute('data-mono')) + 1) % LOOKS.length], true);
+    });
+
+    show(root.getAttribute('data-mono'), false);
+
+    // Fetch the other looks' pictures once the page is idle, so switching is instant.
+    window.addEventListener('load', function () {
+      setTimeout(function () {
+        LOOKS.forEach(function (look) {
+          new Image().src = '/mono/assets/timeline-' + look + '.webp';
+          new Image().src = '/mono/assets/compose-' + look + '.webp';
+        });
+      }, 600);
+    });
+  })();
+</script>
+</body>
+</html>
