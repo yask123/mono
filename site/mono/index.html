@@ -259,6 +259,7 @@
     dl > div, .looks button { grid-template-columns: 1fr; }
     dt, .looks .name { margin-bottom: 2px; }
     .bar .path, .bar .key { display: none; }
+    pre { font-size: 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
     h2 { margin-top: 68px; }
   }
 </style>
@@ -279,7 +280,7 @@
   <p class="lede">Mono is a small browser extension for Safari and Chrome. It reduces X to text, one colour and a hairline around the page, so what is left to look at is what people wrote.</p>
   <p class="get">
     <a class="button" href="https://github.com/yask123/mono/releases/latest/download/Mono.dmg">download for Safari</a>
-    <a href="#install">or load it in Chrome</a>
+    <a href="#install">or install with Homebrew</a>
   </p>
 
   <figure class="wide">
@@ -323,18 +324,20 @@
 
   <h2 id="install">install</h2>
   <h3>Safari</h3>
-  <p><a class="button" href="https://github.com/yask123/mono/releases/latest/download/Mono.dmg">download Mono.dmg</a></p>
+  <pre>brew install --cask yask123/tap/mono-safari</pre>
+  <p>Or <a href="https://github.com/yask123/mono/releases/latest/download/Mono.dmg">download Mono.dmg</a> and drag it to Applications. Then:</p>
   <ol>
-    <li>Open the download and drag Mono to Applications.</li>
-    <li>Open Mono once. Its window lists the next two steps and has a button that opens Safari's settings.</li>
+    <li>Open Mono once. Its window has a button that opens Safari's settings.</li>
     <li>In Safari Settings, choose Extensions and tick Mono.</li>
     <li>On x.com, click the Mono button in the toolbar and choose Always Allow on This Website.</li>
   </ol>
-  <p class="note">For macOS 14 and later. The app is signed and notarized; you can also <a href="https://github.com/yask123/mono#build-it-yourself">build it yourself</a>.</p>
+  <p class="note">For macOS 14 and later. The app is signed and notarized.</p>
 
   <h3>Chrome, Arc, Brave, Edge</h3>
-  <pre>git clone https://github.com/yask123/mono</pre>
-  <p>Open <code>chrome://extensions</code>, turn on Developer mode, choose Load unpacked and pick the <code>mono/extension</code> folder.</p>
+  <pre>brew install yask123/tap/mono-chrome</pre>
+  <pre>mono-chrome</pre>
+  <p>That opens the extensions page with Mono's folder already on your clipboard. Turn on Developer mode, click Load unpacked, press <kbd>&#8984;&#8679;G</kbd>, paste, and choose Open. For another browser, add its name: <code>mono-chrome arc</code>, <code>brave</code> or <code>edge</code>.</p>
+  <p class="note">Chrome only lets you add an extension from outside its store by hand, so this one step stays yours. Without Homebrew, clone <a href="https://github.com/yask123/mono">the repository</a> and load its <code>extension</code> folder the same way.</p>
 
   <footer>
     <p>Open source under the MIT licence: <a href="https://github.com/yask123/mono">github.com/yask123/mono</a></p>

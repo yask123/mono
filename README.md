@@ -38,7 +38,11 @@ You can also click `MONO` or a look name in the status line, or use the toolbar 
 
 ### Safari
 
-Download **[Mono.dmg](https://github.com/yask123/mono/releases/latest/download/Mono.dmg)** (macOS 14 or later, signed and notarized), drag Mono to Applications and open it once. Then:
+```sh
+brew install --cask yask123/tap/mono-safari
+```
+
+Or download **[Mono.dmg](https://github.com/yask123/mono/releases/latest/download/Mono.dmg)** (macOS 14 or later, signed and notarized) and drag Mono to Applications. Open Mono once, then:
 
 1. In Safari → Settings → Extensions, tick **Mono**.
 2. On x.com, click the Mono button in the toolbar and choose **Always Allow on This Website**.
@@ -46,10 +50,13 @@ Download **[Mono.dmg](https://github.com/yask123/mono/releases/latest/download/M
 ### Chrome, Arc, Brave, Edge
 
 ```sh
-git clone https://github.com/yask123/mono
+brew install yask123/tap/mono-chrome
+mono-chrome
 ```
 
-Open `chrome://extensions`, turn on **Developer mode**, choose **Load unpacked** and pick the `mono/extension` folder.
+`mono-chrome` opens `chrome://extensions` with the extension's folder on your clipboard. Turn on **Developer mode**, click **Load unpacked**, press ⌘⇧G, paste and choose **Open**. For another browser: `mono-chrome arc`, `mono-chrome brave` or `mono-chrome edge`. After `brew upgrade mono-chrome`, click the reload arrow on Mono in the extensions page.
+
+Without Homebrew, clone this repository and load its `extension` folder the same way.
 
 ### Build it yourself
 
@@ -65,7 +72,7 @@ DEVELOPMENT_TEAM=YOURTEAMID scripts/build-safari.sh
 
 Without a team, open `safari/Mono/Mono.xcodeproj` in Xcode and press Run. Safari will only load that build after you turn on **Allow unsigned extensions** in Settings → Developer, and it asks again each time Safari restarts.
 
-`scripts/release.sh` makes the signed, notarized `Mono.dmg` that is attached to each release.
+`scripts/release.sh` makes the signed, notarized `Mono.dmg` that is attached to each release, and `scripts/bump-tap.sh <version>` then points the Homebrew tap at it.
 
 ## How it is put together
 
