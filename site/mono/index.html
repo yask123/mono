@@ -141,10 +141,28 @@
 
   .lede {
     max-width: 34em;
-    margin: 0 0 64px;
+    margin: 0 0 30px;
     font-size: calc(var(--m-size) + 2px);
     line-height: 1.65;
   }
+
+  .get {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 14px 24px;
+    max-width: none; margin: 0 0 68px;
+    font: 500 13px/1.6 var(--m-font-meta);
+  }
+  .button {
+    display: inline-block;
+    padding: 7px 18px;
+    border: 1px solid var(--m-accent);
+    border-radius: var(--m-radius);
+    font: 500 13px/1.6 var(--m-font-meta);
+  }
+  .button:hover { background: var(--m-accent); color: var(--m-bg); text-decoration: none; }
+
+  ol { margin: 0 0 18px; padding-left: 1.9em; max-width: 36em; }
+  ol li { margin-bottom: 7px; padding-left: 4px; }
+  ol li::marker { font-family: var(--m-font-meta); color: var(--m-dim); }
 
   figure { margin: 0; }
   figure img {
@@ -259,6 +277,10 @@
 
   <h1>A quiet way<br>to read X.</h1>
   <p class="lede">Mono is a small browser extension for Safari and Chrome. It reduces X to text, one colour and a hairline around the page, so what is left to look at is what people wrote.</p>
+  <p class="get">
+    <a class="button" href="https://github.com/yask123/mono/releases/latest/download/Mono.dmg">download for Safari</a>
+    <a href="#install">or load it in Chrome</a>
+  </p>
 
   <figure class="wide">
     <img id="shot-timeline" src="/mono/assets/timeline-phosphor.webp" width="2200" height="1480"
@@ -300,11 +322,19 @@
   </dl>
 
   <h2 id="install">install</h2>
+  <h3>Safari</h3>
+  <p><a class="button" href="https://github.com/yask123/mono/releases/latest/download/Mono.dmg">download Mono.dmg</a></p>
+  <ol>
+    <li>Open the download and drag Mono to Applications.</li>
+    <li>Open Mono once. Its window lists the next two steps and has a button that opens Safari's settings.</li>
+    <li>In Safari Settings, choose Extensions and tick Mono.</li>
+    <li>On x.com, click the Mono button in the toolbar and choose Always Allow on This Website.</li>
+  </ol>
+  <p class="note">For macOS 14 and later. The app is signed and notarized; you can also <a href="https://github.com/yask123/mono#build-it-yourself">build it yourself</a>.</p>
+
   <h3>Chrome, Arc, Brave, Edge</h3>
   <pre>git clone https://github.com/yask123/mono</pre>
   <p>Open <code>chrome://extensions</code>, turn on Developer mode, choose Load unpacked and pick the <code>mono/extension</code> folder.</p>
-  <h3>Safari</h3>
-  <p>Safari needs the extension wrapped in a small Mac app, which for now you build yourself with Xcode. The <a href="https://github.com/yask123/mono#safari">README</a> has the steps.</p>
 
   <footer>
     <p>Open source under the MIT licence: <a href="https://github.com/yask123/mono">github.com/yask123/mono</a></p>

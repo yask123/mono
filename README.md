@@ -36,6 +36,13 @@ You can also click `MONO` or a look name in the status line, or use the toolbar 
 
 ## Install
 
+### Safari
+
+Download **[Mono.dmg](https://github.com/yask123/mono/releases/latest/download/Mono.dmg)** (macOS 14 or later, signed and notarized), drag Mono to Applications and open it once. Then:
+
+1. In Safari → Settings → Extensions, tick **Mono**.
+2. On x.com, click the Mono button in the toolbar and choose **Always Allow on This Website**.
+
 ### Chrome, Arc, Brave, Edge
 
 ```sh
@@ -44,9 +51,9 @@ git clone https://github.com/yask123/mono
 
 Open `chrome://extensions`, turn on **Developer mode**, choose **Load unpacked** and pick the `mono/extension` folder.
 
-### Safari
+### Build it yourself
 
-Safari only loads an extension that is wrapped in a Mac app, so for now you build that app yourself. You need Xcode.
+Safari only loads an extension that is wrapped in a Mac app. To build that app from source you need Xcode.
 
 With an Apple developer team:
 
@@ -56,9 +63,9 @@ cd mono
 DEVELOPMENT_TEAM=YOURTEAMID scripts/build-safari.sh
 ```
 
-Then open Safari → Settings → Extensions, tick **Mono**, and allow it on x.com.
-
 Without a team, open `safari/Mono/Mono.xcodeproj` in Xcode and press Run. Safari will only load that build after you turn on **Allow unsigned extensions** in Settings → Developer, and it asks again each time Safari restarts.
+
+`scripts/release.sh` makes the signed, notarized `Mono.dmg` that is attached to each release.
 
 ## How it is put together
 

@@ -1,4 +1,5 @@
 build/
+dist/
 previews/
 .DS_Store
 .vercel/

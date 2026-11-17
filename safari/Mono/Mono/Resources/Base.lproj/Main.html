@@ -3,17 +3,26 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'">
-
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-
     <link rel="stylesheet" href="../Style.css">
     <script src="../Script.js" defer></script>
 </head>
 <body>
-    <img src="../Icon.png" width="128" height="128" alt="Mono Icon">
-    <p class="state-unknown">You can turn on Mono’s extension in Safari Extensions preferences.</p>
-    <p class="state-on">Mono’s extension is currently on. You can turn it off in Safari Extensions preferences.</p>
-    <p class="state-off">Mono’s extension is currently off. You can turn it on in Safari Extensions preferences.</p>
-    <button class="open-preferences">Quit and Open Safari Extensions Preferences…</button>
+    <div class="frame"></div>
+    <main>
+        <span class="tag">MONO</span>
+
+        <h1 class="when-off">One step left: turn Mono on in Safari.</h1>
+        <ol class="when-off">
+            <li>Open Safari Settings, choose Extensions and tick <b>Mono</b>.</li>
+            <li>Open x.com, click the Mono button in the toolbar and choose <b>Always Allow on This Website</b>.</li>
+        </ol>
+
+        <h1 class="when-on">Mono is on.</h1>
+        <p class="when-on">Open x.com in Safari. The line at the bottom of the page switches looks, and &#8997;&#8679;M turns Mono off and on.</p>
+
+        <button class="open-preferences">open safari settings</button>
+        <p class="note">This window closes when Settings opens.</p>
+    </main>
 </body>
 </html>
